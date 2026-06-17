@@ -33,5 +33,7 @@ module.exports.routes = {
   *                                                                          *
   ***************************************************************************/
 
-
+  'GET /ping': 'PingController.ping',
+  'POST /customer/create': 'CustomerController.create',
+  'POST /customer/login': 'CustomerController.login',
 };

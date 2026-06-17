@@ -14,6 +14,7 @@ module.exports = {
     customer: {
       model: 'customer',
       unique: true,
+      required: true,
     },
   },
 };

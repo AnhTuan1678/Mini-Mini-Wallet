@@ -16,4 +16,11 @@ module.exports.policies = {
     login: true,
     getBalance: 'isLoggedIn',
   },
+
+  PocketController: {
+    getBalance: ['isLoggedIn', 'attachPocket'],
+    deposit: ['isLoggedIn', 'attachPocket'],
+    withdraw: ['isLoggedIn', 'attachPocket'],
+    transfer: ['isLoggedIn', 'attachPocket'],
+  },
 };

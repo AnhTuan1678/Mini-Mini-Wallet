@@ -11,8 +11,12 @@
 module.exports.routes = {
   '/': { view: 'pages/homepage' },
 
-  'GET /ping': 'PingController.ping',
   'POST /customer/create': 'CustomerController.create',
   'POST /customer/login': 'CustomerController.login',
   'POST /customer/balance': 'CustomerController.getBalance',
+
+  'POST /pocket/balance': 'PocketController.getBalance',
+  'POST /pocket/deposit': 'PocketController.deposit',
+  'POST /pocket/withdraw': 'PocketController.withdraw',
+  'POST /pocket/transfer': 'PocketController.transfer',
 };

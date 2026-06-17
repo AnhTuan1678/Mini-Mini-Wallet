@@ -1,12 +1,6 @@
 const ObjectId = require('mongodb').ObjectId;
 
 module.exports = {
-  getBalance: async function (req, res) {
-    return res.ok({
-      balance: req.pocket.balance,
-    });
-  },
-
   deposit: async function (req, res) {
     const { amount } = req.body;
     if (!Number.isFinite(amount) || amount <= 0) {
@@ -27,8 +21,14 @@ module.exports = {
           message: 'Failed to update pocket balance',
         });
       }
+      const transaction = await Transaction.create({
+        type: 'deposit',
+        toPocket: req.pocket.id,
+        amount: amount,
+      }).fetch();
       return res.ok({
         balance: updatedPocket.balance,
+        transaction,
       });
     } catch (err) {
       return res.serverError({
@@ -65,8 +65,14 @@ module.exports = {
           message: 'Failed to update pocket balance',
         });
       }
+      const transaction = await Transaction.create({
+        type: 'withdraw',
+        fromPocket: req.pocket.id,
+        amount: amount,
+      }).fetch();
       return res.ok({
         balance: updatedPocket.balance,
+        transaction,
       });
     } catch (err) {
       return res.serverError({
@@ -115,18 +121,31 @@ module.exports = {
       );
 
       if (!recipient) {
-        // rollback đơn giản (best effort)
         await collection.updateOne(
           { _id: new ObjectId(req.pocket.id) },
           { $inc: { balance: amountNum } },
         );
 
-        return res.serverError({ message: 'Transfer failed at recipient step' });
+        const transaction = await Transaction.create({
+          type: 'transfer',
+          fromPocket: req.pocket.id,
+          toPocket: recipientPocket.id,
+          amount: amountNum,
+          status: 'failed',
+        }).fetch();
+        return res.serverError({ message: 'Transfer failed at recipient step', transaction });
       }
+
+      const transaction = await Transaction.create({
+        type: 'transfer',
+        fromPocket: req.pocket.id,
+        toPocket: recipientPocket.id,
+        amount: amountNum,
+      }).fetch();
 
       return res.ok({
         senderBalance: sender.balance,
-        amountTransferred: amountNum,
+        transaction,
       });
     } catch (err) {
       return res.serverError({

@@ -13,10 +13,11 @@ module.exports.routes = {
 
   'POST /customer/create': 'CustomerController.create',
   'POST /customer/login': 'CustomerController.login',
-  'POST /customer/balance': 'CustomerController.getBalance',
+  'POST /customer/pocket': 'CustomerController.getPocket',
 
-  'POST /pocket/balance': 'PocketController.getBalance',
   'POST /pocket/deposit': 'PocketController.deposit',
   'POST /pocket/withdraw': 'PocketController.withdraw',
   'POST /pocket/transfer': 'PocketController.transfer',
+
+  'POST /transaction/history': 'TransactionController.getTransactions',
 };

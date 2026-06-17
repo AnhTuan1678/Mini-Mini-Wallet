@@ -25,9 +25,35 @@ module.exports = {
         message: 'Invalid phone or password',
       });
     }
-    const token = jwt.sign({ id: customer.id }, JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign(
+      {
+        id: customer.id,
+        phone: customer.phone,
+      },
+      JWT_SECRET,
+      { expiresIn: '1h' },
+    );
     return res.ok({
       token,
     });
+  },
+
+  getBalance: async function (req, res) {
+    const customerId = req.user.id;
+    try {
+      const pocket = await Pocket.findOne({ customer: customerId });
+      if (!pocket) {
+        return res.badRequest({
+          message: 'Pocket not found for this customer',
+        });
+      }
+      return res.ok({
+        balance: pocket.balance,
+      });
+    } catch (err) {
+      return res.error({
+        message: `Failed to retrieve balance: ${err.message}`,
+      });
+    }
   },
 };

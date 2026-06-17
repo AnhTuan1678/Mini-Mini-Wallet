@@ -9,14 +9,11 @@
  */
 
 module.exports.policies = {
+  '*': false,
 
-  /***************************************************************************
-  *                                                                          *
-  * Default policy for all controllers and actions, unless overridden.       *
-  * (`true` allows public access)                                            *
-  *                                                                          *
-  ***************************************************************************/
-
-  // '*': true,
-
+  CustomerController: {
+    create: true,
+    login: true,
+    getBalance: 'isLoggedIn',
+  },
 };

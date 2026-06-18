@@ -8,8 +8,9 @@ module.exports.policies = {
   },
 
   PocketController: {
-    deposit: ['isLoggedIn', 'attachPocket'],
-    withdraw: ['isLoggedIn', 'attachPocket'],
+    getBalance: ['isLoggedIn', 'attachPocket'],
+    // deposit: ['isLoggedIn', 'attachPocket'],
+    // withdraw: ['isLoggedIn', 'attachPocket'],
     transfer: ['isLoggedIn', 'attachPocket'],
   },
 

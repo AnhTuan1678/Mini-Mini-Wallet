@@ -2,15 +2,16 @@ module.exports = async function (req, res, next) {
   try {
     const userId = req.user && req.user.id;
     if (!userId) {
-      return res.badRequest({
-        message: 'User ID not found in token',
+      return res.error({
+        err: respCode.UNAUTHORIZED.code,
+        message: respCode.UNAUTHORIZED.message,
       });
     }
 
     const pocket = await Pocket.findOne({ customer: userId });
     if (!pocket) {
-      return res.badRequest({
-        message: 'Pocket not found for this customer',
+      return res.notFound({
+        message: 'Không tìm thấy ví cho khách hàng',
       });
     }
 

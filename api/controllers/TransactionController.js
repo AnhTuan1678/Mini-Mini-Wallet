@@ -6,8 +6,9 @@ module.exports = {
       }).sort('createdAt DESC');
       return res.ok({ transactions });
     } catch (err) {
+      sails.log.error(err);
       return res.serverError({
-        message: `Failed to retrieve transactions: ${err.message}`,
+        message: 'Lỗi khi lấy danh sách giao dịch',
       });
     }
   },

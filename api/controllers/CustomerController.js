@@ -3,15 +3,36 @@ const jwt = require('jsonwebtoken');
 module.exports = {
   create: async function (req, res) {
     const { phone, password } = req.body;
+    // Kiểm tra xem số điện thoại và mật khẩu có hợp lệ không
+    if (!phone || !password) {
+      return res.badRequest({
+        message: 'Số điện thoại và mật khẩu là bắt buộc',
+      });
+    }
+    // if (!/^0\d{9}$/.test(phone)) {
+    //   return res.badRequest({
+    //     message: 'Số điện thoại không hợp lệ',
+    //   });
+    // }
     try {
+      // Kiểm tra xem số điện thoại đã tồn tại chưa
+      const existingCustomer = await Customer.findOne({ phone });
+      if (existingCustomer) {
+        return res.badRequest({
+          message: 'Số điện thoại đã tồn tại',
+        });
+      }
+
+      // Tạo khách hàng mới và ví tương ứng
       const customer = await Customer.create({ phone, password }).fetch();
       await Pocket.create({ customer: customer.id });
       return res.ok({
         customer,
+        message: 'Khách hàng và ví đã được tạo thành công',
       });
     } catch (err) {
-      return res.error({
-        message: `Failed to create customer: ${err.message}`,
+      return res.serverError({
+        message: `Lỗi khi tạo khách hàng và ví: ${err.message}`,
       });
     }
   },
@@ -21,8 +42,8 @@ module.exports = {
     const JWT_SECRET = process.env.JWT_SECRET || 'secret';
     const customer = await Customer.findOne({ phone, password });
     if (!customer) {
-      return res.badRequest({
-        message: 'Invalid phone or password',
+      return res.notFound({
+        message: 'Số điện thoại hoặc mật khẩu không đúng',
       });
     }
     const token = jwt.sign(

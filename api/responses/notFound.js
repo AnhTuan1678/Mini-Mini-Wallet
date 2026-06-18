@@ -1,7 +1,7 @@
 module.exports = function (data) {
   return this.res.json({
-    err: 405,
-    message: 'Error',
+    err: respCode.NOT_FOUND.code,
+    message: respCode.NOT_FOUND.message,
     ...data,
   });
 };

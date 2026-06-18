@@ -1,7 +1,7 @@
 module.exports = function (data) {
   return this.res.json({
-    err: 400,
-    message: 'Bad Request',
+    err: respCode.INTERNAL_SERVER_ERROR.code,
+    message: respCode.INTERNAL_SERVER_ERROR.message,
     ...data,
   });
 };

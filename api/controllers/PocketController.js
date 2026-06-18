@@ -5,7 +5,7 @@ module.exports = {
     const { amount } = req.body;
     if (!Number.isFinite(amount) || amount <= 0) {
       return res.badRequest({
-        message: 'Deposit amount must be a positive number',
+        message: 'Số tiền nạp phải là một số dương',
       });
     }
     try {
@@ -18,7 +18,7 @@ module.exports = {
         );
       if (!updatedPocket) {
         return res.serverError({
-          message: 'Failed to update pocket balance',
+          message: 'Lỗi khi cập nhật số dư ví',
         });
       }
       const transaction = await Transaction.create({
@@ -31,8 +31,9 @@ module.exports = {
         transaction,
       });
     } catch (err) {
+      sails.log.error(err);
       return res.serverError({
-        message: `Failed to deposit: ${err.message}`,
+        message: 'Lỗi nạp tiền',
       });
     }
   },
@@ -41,12 +42,12 @@ module.exports = {
     const { amount } = req.body;
     if (!Number.isFinite(amount) || amount <= 0) {
       return res.badRequest({
-        message: 'Withdrawal amount must be a positive number',
+        message: 'Số tiền rút phải là một số dương',
       });
     }
     if (req.pocket.balance < amount) {
       return res.badRequest({
-        message: 'Insufficient balance',
+        message: 'Số dư không đủ để thực hiện giao dịch rút tiền',
       });
     }
     try {
@@ -62,7 +63,7 @@ module.exports = {
         );
       if (!updatedPocket) {
         return res.serverError({
-          message: 'Failed to update pocket balance',
+          message: 'Lỗi khi cập nhật số dư ví',
         });
       }
       const transaction = await Transaction.create({
@@ -75,8 +76,9 @@ module.exports = {
         transaction,
       });
     } catch (err) {
+      sails.log.error(err);
       return res.serverError({
-        message: `Failed to withdraw: ${err.message}`,
+        message: 'Lỗi rút tiền',
       });
     }
   },
@@ -86,18 +88,18 @@ module.exports = {
     const recipientPhone = req.body.recipientPhone;
 
     if (!Number.isFinite(amountNum) || amountNum <= 0) {
-      return res.badRequest({ message: 'Invalid amount' });
+      return res.badRequest({ message: 'Số tiền chuyển phải là một số dương' });
     }
 
     try {
       const recipientCustomer = await Customer.findOne({ phone: recipientPhone });
       if (!recipientCustomer) {
-        return res.badRequest({ message: 'Recipient not found' });
+        return res.notFound({ message: 'Người nhận không tồn tại' });
       }
 
       const recipientPocket = await Pocket.findOne({ customer: recipientCustomer.id });
       if (!recipientPocket) {
-        return res.serverError({ message: 'Recipient pocket not found' });
+        return res.serverError({ message: 'Không tìm thấy ví của người nhận' });
       }
 
       const collection = Pocket.getDatastore().manager.collection(Pocket.tableName);
@@ -111,7 +113,7 @@ module.exports = {
         { returnDocument: 'after' },
       );
       if (!sender) {
-        return res.badRequest({ message: 'Insufficient balance' });
+        return res.badRequest({ message: 'Số dư không đủ để thực hiện giao dịch chuyển tiền' });
       }
 
       const recipient = await collection.findOneAndUpdate(
@@ -133,7 +135,10 @@ module.exports = {
           amount: amountNum,
           status: 'failed',
         }).fetch();
-        return res.serverError({ message: 'Transfer failed at recipient step', transaction });
+        return res.serverError({
+          message: 'Lỗi khi chuyển tiền',
+          transaction,
+        });
       }
 
       const transaction = await Transaction.create({
@@ -148,8 +153,9 @@ module.exports = {
         transaction,
       });
     } catch (err) {
+      sails.log.error(err);
       return res.serverError({
-        message: `Failed to transfer: ${err.message}`,
+        message: 'Lỗi khi chuyển tiền',
       });
     }
   },

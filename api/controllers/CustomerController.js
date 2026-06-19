@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 
 module.exports = {
   create: async function (req, res) {
@@ -23,11 +24,15 @@ module.exports = {
         });
       }
 
-      // Tạo khách hàng mới và ví tương ứng
-      const customer = await Customer.create({ phone, password }).fetch();
+      // Tạo khách hàng mới và ví tương ứng (hash mật khẩu trước khi lưu)
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const customer = await Customer.create({ phone, password: hashedPassword }).fetch();
       await Pocket.create({ customer: customer.id });
       return res.ok({
-        customer,
+        customer: {
+          id: customer.id,
+          phone: customer.phone,
+        },
         message: 'Khách hàng và ví đã được tạo thành công',
       });
     } catch (err) {
@@ -40,10 +45,17 @@ module.exports = {
   login: async function (req, res) {
     const { phone, password } = req.body;
     const JWT_SECRET = process.env.JWT_SECRET || 'secret';
-    const customer = await Customer.findOne({ phone, password });
+    const customer = await Customer.findOne({ phone });
     if (!customer) {
       return res.notFound({
-        message: 'Số điện thoại hoặc mật khẩu không đúng',
+        message: 'Số điện thoại không tồn tại',
+      });
+    }
+
+    const passwordMatches = await bcrypt.compare(password, customer.password);
+    if (!passwordMatches) {
+      return res.notFound({
+        message: 'Mật khẩu không đúng',
       });
     }
     const token = jwt.sign(

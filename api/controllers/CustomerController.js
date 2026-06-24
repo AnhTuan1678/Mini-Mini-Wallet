@@ -10,11 +10,16 @@ module.exports = {
         message: 'Số điện thoại và mật khẩu là bắt buộc',
       });
     }
-    // if (!/^0\d{9}$/.test(phone)) {
-    //   return res.badRequest({
-    //     message: 'Số điện thoại không hợp lệ',
-    //   });
-    // }
+    if (!/^0\d{9}$/.test(phone)) {
+      return res.badRequest({
+        message: 'Số điện thoại không hợp lệ',
+      });
+    }
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/.test(password)) {
+      return res.badRequest({
+        message: 'Mật khẩu không hợp lệ',
+      });
+    }
     try {
       // Kiểm tra xem số điện thoại đã tồn tại chưa
       const existingCustomer = await Customer.findOne({ phone });
@@ -26,7 +31,10 @@ module.exports = {
 
       // Tạo khách hàng mới và ví tương ứng (hash mật khẩu trước khi lưu)
       const hashedPassword = await bcrypt.hash(password, 10);
-      const customer = await Customer.create({ phone, password: hashedPassword }).fetch();
+      const customer = await Customer.create({
+        phone,
+        password: hashedPassword,
+      }).fetch();
       await Pocket.create({ customer: customer.id });
       return res.ok({
         customer: {
@@ -64,7 +72,7 @@ module.exports = {
         phone: customer.phone,
       },
       JWT_SECRET,
-      { expiresIn: '1h' },
+      { expiresIn: '1h' }
     );
     return res.ok({
       token,
